@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import AppSidebar from '@/components/layout/AppSidebar'
+import AppSidebarWrapper from '@/components/layout/AppSidebarWrapper'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -21,11 +21,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="flex h-screen bg-surface-page overflow-hidden">
       {/* Sidebar — hidden below 768px (bottom nav would replace it; add that for mobile) */}
       <div className="hidden md:flex">
-        <AppSidebar
-          profile     = {profile}
-          collections = {collections}
-          memyCount   = {memyCount}
-          onNewMemy   = {() => {}}  // wired per-page via client component
+        <AppSidebarWrapper
+          profile={profile}
+          collections={collections}
+          memyCount={memyCount}
         />
       </div>
       <main className="flex-1 overflow-hidden flex flex-col">
