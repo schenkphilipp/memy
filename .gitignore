@@ -1,4 +1,7 @@
-# Compiled class file
+#Ignore backup folder
+~/backup
+
+#Compiled class file
 *.class
 
 # Log file
