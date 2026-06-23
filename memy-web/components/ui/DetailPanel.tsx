@@ -1,16 +1,42 @@
 'use client'
+import { useState } from 'react'
 import Image from 'next/image'
-import { X, Link, ExternalLink, MapPin, Calendar, Smile, Edit, Share2 } from 'lucide-react'
+import { X, Link, ExternalLink, MapPin, Calendar, Smile, Edit, Share2, Trash2 } from 'lucide-react'
 import { TagChip } from './TagChip'
 import { formatDateLong } from '@/lib/utils'
+import { createClient } from '@/lib/supabase/client'
 import type { Memy } from '@/types/database'
 
 interface DetailPanelProps {
   memy: Memy
   onClose: () => void
+  onEdit: () => void
+  onDeleted: (id: string) => void
 }
 
-export default function DetailPanel({ memy, onClose }: DetailPanelProps) {
+function buildMailto(memy: Memy): string {
+  const subject = encodeURIComponent(`Check out this memy: ${memy.name}`)
+  const lines: string[] = [`📌 ${memy.name}`]
+  if (memy.description) lines.push('', memy.description)
+  if (memy.location_label) lines.push('', `📍 ${memy.location_label}`)
+  if (memy.date) lines.push(`🗓 ${memy.date}`)
+  if (memy.url) lines.push('', `🔗 ${memy.url}`)
+  if (memy.tags.length > 0) lines.push('', `🏷 ${memy.tags.join(', ')}`)
+  return `mailto:?subject=${subject}&body=${encodeURIComponent(lines.join('\n'))}`
+}
+
+export default function DetailPanel({ memy, onClose, onEdit, onDeleted }: DetailPanelProps) {
+  const [deleting, setDeleting] = useState(false)
+
+  async function handleDelete() {
+    if (!window.confirm(`Delete "${memy.name}"? This cannot be undone.`)) return
+    setDeleting(true)
+    const supabase = createClient()
+    await supabase.from('memys').delete().eq('id', memy.id)
+    onDeleted(memy.id)
+    onClose()
+  }
+
   return (
     <>
       {/* Scrim */}
@@ -97,13 +123,28 @@ export default function DetailPanel({ memy, onClose }: DetailPanelProps) {
 
           {/* Actions */}
           <div className="flex gap-3 pt-2 mt-auto">
-            <button className="flex items-center gap-2 px-4 py-2 rounded-md border border-border-default
-                               text-field font-ui text-text-body hover:bg-surface-sunken transition-colors">
+            <button
+              onClick={onEdit}
+              className="flex items-center gap-2 px-4 py-2 rounded-md border border-border-default
+                         text-field font-ui text-text-body hover:bg-surface-sunken transition-colors">
               <Edit className="w-4 h-4" /> Edit
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-md border border-border-default
-                               text-field font-ui text-text-body hover:bg-surface-sunken transition-colors">
+            <a
+              href={buildMailto(memy)}
+              className="flex items-center gap-2 px-4 py-2 rounded-md border border-border-default
+                         text-field font-ui text-text-body hover:bg-surface-sunken transition-colors">
               <Share2 className="w-4 h-4" /> Share
+            </a>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="ml-auto flex items-center gap-2 px-4 py-2 rounded-md border border-danger/30
+                         text-field font-ui text-danger hover:bg-danger/10 transition-colors
+                         disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Delete memy"
+            >
+              <Trash2 className="w-4 h-4" />
+              {deleting ? 'Deleting…' : 'Delete'}
             </button>
           </div>
         </div>

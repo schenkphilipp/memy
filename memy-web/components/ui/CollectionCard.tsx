@@ -3,11 +3,12 @@ import type { Collection } from '@/types/database'
 
 interface CollectionCardProps {
   collection: Collection
+  coverUrls?: string[]
   onClick: () => void
 }
 
-export default function CollectionCard({ collection, onClick }: CollectionCardProps) {
-  const covers = collection.cover_urls.slice(0, 4)
+export default function CollectionCard({ collection, coverUrls, onClick }: CollectionCardProps) {
+  const covers = (coverUrls ?? collection.cover_urls).slice(0, 4)
   while (covers.length < 4) covers.push('')
 
   return (

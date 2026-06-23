@@ -1,11 +1,13 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Sparkles } from 'lucide-react'
 import AppTopBar from '@/components/layout/AppTopBar'
 import { FilterChip } from '@/components/ui/TagChip'
 import MemyCard from '@/components/ui/MemyCard'
 import DetailPanel from '@/components/ui/DetailPanel'
 import EmptyState from '@/components/ui/EmptyState'
+import AddMemyModal from '@/components/ui/AddMemyModal'
+import EditMemyModal from '@/components/ui/EditMemyModal'
 import type { Memy } from '@/types/database'
 
 const FILTER_LABELS = ['All', 'Places', 'Notes', 'Links', 'Food']
@@ -15,10 +17,18 @@ const FILTER_LABELS = ['All', 'Places', 'Notes', 'Links', 'Food']
 interface HomeClientProps { initialMemys: Memy[] }
 
 export default function HomeClient({ initialMemys }: HomeClientProps) {
-  const [memys]              = useState<Memy[]>(initialMemys)
+  const [memys, setMemys]    = useState<Memy[]>(initialMemys)
   const [query, setQuery]    = useState('')
   const [filter, setFilter]  = useState('All')
   const [selected, setSelected] = useState<Memy | null>(null)
+  const [editing, setEditing]   = useState<Memy | null>(null)
+  const [showAdd, setShowAdd]   = useState(false)
+
+  useEffect(() => {
+    const open = () => setShowAdd(true)
+    window.addEventListener('memy:open-add', open)
+    return () => window.removeEventListener('memy:open-add', open)
+  }, [])
 
   const filtered = useMemo(() => {
     let list = memys
@@ -61,7 +71,7 @@ export default function HomeClient({ initialMemys }: HomeClientProps) {
               ? 'Try a different word, a place, or one of your tags.'
               : 'Save a place, a note, a link or a photo — anything worth remembering.'}
             ctaLabel="Add a memy"
-            onCta={() => {}}
+            onCta={() => setShowAdd(true)}
           />
         ) : (
           <div className="masonry-grid">
@@ -78,7 +88,32 @@ export default function HomeClient({ initialMemys }: HomeClientProps) {
 
       {/* Detail panel */}
       {selected && (
-        <DetailPanel memy={selected} onClose={() => setSelected(null)} />
+        <DetailPanel
+          memy={selected}
+          onClose={() => setSelected(null)}
+          onEdit={() => { setEditing(selected); setSelected(null) }}
+          onDeleted={id => { setMemys(prev => prev.filter(m => m.id !== id)); setSelected(null) }}
+        />
+      )}
+
+      {/* Edit memy modal */}
+      {editing && (
+        <EditMemyModal
+          memy={editing}
+          onClose={() => setEditing(null)}
+          onSaved={updated => {
+            setMemys(prev => prev.map(m => m.id === updated.id ? updated : m))
+            setEditing(null)
+          }}
+        />
+      )}
+
+      {/* Add memy modal */}
+      {showAdd && (
+        <AddMemyModal
+          onClose={() => setShowAdd(false)}
+          onAdded={memy => setMemys(prev => [memy, ...prev])}
+        />
       )}
     </>
   )
