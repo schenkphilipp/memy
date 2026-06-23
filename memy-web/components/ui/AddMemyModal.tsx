@@ -1,18 +1,21 @@
 'use client'
 import { useState, useEffect, useRef, FormEvent } from 'react'
-import { X, ImagePlus, Trash2 } from 'lucide-react'
+import { X, ImagePlus, Trash2, MapPin } from 'lucide-react'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import Input from './Input'
 import Button from './Button'
 import type { Memy, Collection } from '@/types/database'
 
+interface InitialLocation { lat: number; lng: number; label: string }
+
 interface AddMemyModalProps {
   onClose: () => void
   onAdded: (memy: Memy) => void
+  initialLocation?: InitialLocation
 }
 
-export default function AddMemyModal({ onClose, onAdded }: AddMemyModalProps) {
+export default function AddMemyModal({ onClose, onAdded, initialLocation }: AddMemyModalProps) {
   const [name, setName]               = useState('')
   const [description, setDescription] = useState('')
   const [url, setUrl]                 = useState('')
@@ -22,6 +25,7 @@ export default function AddMemyModal({ onClose, onAdded }: AddMemyModalProps) {
   const [photoPreview, setPhotoPreview]   = useState<string | null>(null)
   const [collections, setCollections]     = useState<Collection[]>([])
   const [selectedIds, setSelectedIds]     = useState<string[]>([])
+  const [location, setLocation]           = useState<InitialLocation | null>(initialLocation ?? null)
   const [error, setError]                 = useState<string | null>(null)
   const [loading, setLoading]             = useState(false)
   const fileInputRef                      = useRef<HTMLInputElement>(null)
@@ -100,6 +104,9 @@ export default function AddMemyModal({ onClose, onAdded }: AddMemyModalProps) {
         date,
         photo_url:      photoUrl,
         collection_ids: selectedIds,
+        location_lat:   location?.lat ?? null,
+        location_lng:   location?.lng ?? null,
+        location_label: location?.label ?? null,
       })
       .select()
       .single()
@@ -206,6 +213,22 @@ export default function AddMemyModal({ onClose, onAdded }: AddMemyModalProps) {
               value={date}
               onChange={e => setDate(e.target.value)}
             />
+
+            {/* Location */}
+            <div className="flex flex-col gap-1">
+              <span className="text-caption font-accent font-medium text-text-muted uppercase tracking-wider">Location</span>
+              {location ? (
+                <div className="flex items-center gap-2 px-3 py-2 bg-surface-sunken rounded-md">
+                  <MapPin className="w-4 h-4 text-brand shrink-0" />
+                  <span className="font-ui text-body-sm text-text-body flex-1 truncate">{location.label}</span>
+                  <button type="button" onClick={() => setLocation(null)} aria-label="Remove location">
+                    <X className="w-4 h-4 text-text-muted hover:text-danger transition-colors" />
+                  </button>
+                </div>
+              ) : (
+                <p className="font-ui text-caption text-text-subtle">No location selected.</p>
+              )}
+            </div>
 
             {/* Collection picker */}
             {collections.length > 0 && (
