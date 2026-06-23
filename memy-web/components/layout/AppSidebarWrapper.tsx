@@ -10,7 +10,7 @@ interface Props {
 
 export default function AppSidebarWrapper({ profile, collections, memyCount }: Props) {
   function onNewMemy() {
-    // TODO: wire up new-memy action
+    window.dispatchEvent(new Event('memy:open-add'))
   }
 
   return (
