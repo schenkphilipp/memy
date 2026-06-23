@@ -9,13 +9,23 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const [profileRes, memysRes, collectionsRes] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
-    supabase.from('memys').select('id').eq('user_id', user.id),
+    supabase.from('memys').select('id, collection_ids').eq('user_id', user.id),
     supabase.from('collections').select('*').eq('user_id', user.id).order('created_at'),
   ])
 
-  const profile     = profileRes.data
-  const memyCount   = memysRes.data?.length ?? 0
-  const collections = collectionsRes.data ?? []
+  const profile   = profileRes.data
+  const memyCount = memysRes.data?.length ?? 0
+  const memys     = memysRes.data ?? []
+
+  const countById = memys.reduce<Record<string, number>>((acc, m) => {
+    m.collection_ids?.forEach(id => { acc[id] = (acc[id] ?? 0) + 1 })
+    return acc
+  }, {})
+
+  const collections = (collectionsRes.data ?? []).map(col => ({
+    ...col,
+    memy_count: countById[col.id] ?? 0,
+  }))
 
   return (
     <div className="flex h-screen bg-surface-page overflow-hidden">

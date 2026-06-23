@@ -83,7 +83,9 @@ export default function AppSidebar({ profile, collections, memyCount, onNewMemy 
                 className="flex items-center gap-2 px-2 py-1.5 rounded-md text-body-sm font-ui
                            text-text-body hover:bg-surface-sunken transition-colors"
               >
-                <span className="text-sm">📁</span>
+                <span className="w-5 h-5 rounded flex items-center justify-center bg-brand-wash shrink-0">
+                  <Plus className="w-3 h-3 text-brand" />
+                </span>
                 <span className="truncate flex-1">{col.name}</span>
                 <span className="text-caption text-text-subtle">{col.memy_count}</span>
               </Link>

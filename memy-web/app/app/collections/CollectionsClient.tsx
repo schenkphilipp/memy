@@ -42,13 +42,12 @@ export default function CollectionsClient({ initialCollections, memyCovers }: Co
         ) : (
           <div className="grid grid-cols-3 gap-6 max-[1099px]:grid-cols-2 max-[767px]:grid-cols-1">
             {filtered.map(col => {
-              const covers = memyCovers
-                .filter(m => m.collection_ids.includes(col.id) && m.photo_url)
-                .slice(0, 4)
-                .map(m => m.photo_url as string)
+              const colMemys = memyCovers.filter(m => m.collection_ids.includes(col.id))
+              const covers   = colMemys.filter(m => m.photo_url).slice(0, 4).map(m => m.photo_url as string)
+              const count    = colMemys.length
               return (
                 <Link key={col.id} href={`/app/collections/${col.id}`}>
-                  <CollectionCard collection={col} coverUrls={covers} onClick={() => {}} />
+                  <CollectionCard collection={col} coverUrls={covers} memyCount={count} onClick={() => {}} />
                 </Link>
               )
             })}
