@@ -12,7 +12,6 @@ export default async function CollectionsPage() {
     supabase.from('memys')
       .select('photo_url, collection_ids')
       .eq('user_id', user.id)
-      .not('photo_url', 'is', null)
       .order('created_at', { ascending: false }),
   ])
 

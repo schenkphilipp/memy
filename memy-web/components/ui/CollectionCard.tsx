@@ -4,10 +4,11 @@ import type { Collection } from '@/types/database'
 interface CollectionCardProps {
   collection: Collection
   coverUrls?: string[]
+  memyCount?: number
   onClick: () => void
 }
 
-export default function CollectionCard({ collection, coverUrls, onClick }: CollectionCardProps) {
+export default function CollectionCard({ collection, coverUrls, memyCount, onClick }: CollectionCardProps) {
   const covers = (coverUrls ?? collection.cover_urls).slice(0, 4)
   while (covers.length < 4) covers.push('')
 
@@ -29,7 +30,7 @@ export default function CollectionCard({ collection, coverUrls, onClick }: Colle
       </div>
       <div className="p-3">
         <p className="font-ui font-semibold text-body-sm text-text-strong">{collection.name}</p>
-        <p className="text-[11px] text-text-muted font-ui mt-0.5">{collection.memy_count} memys</p>
+        <p className="text-[11px] text-text-muted font-ui mt-0.5">{memyCount ?? collection.memy_count} memys</p>
       </div>
     </div>
   )
